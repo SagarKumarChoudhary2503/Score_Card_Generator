@@ -1,0 +1,16 @@
+.grading-table {
+  margin-top: 60px;
+}
+
+.grading-table th,
+.grading-table td {
+  text-align: center;
+}
+
+.grading-table th {
+  background-color: #cceb5f;
+}
+
+.grading-table tbody tr {
+  background-color: #ecd7d7;
+}
