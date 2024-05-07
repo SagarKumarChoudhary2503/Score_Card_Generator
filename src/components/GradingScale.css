@@ -1,16 +1,9 @@
-.grading-table {
-  margin-top: 60px;
+.GradingScale {
+  display: flex;
+  justify-content: center;
+  grid-column: span 2;
 }
 
-.grading-table th,
-.grading-table td {
-  text-align: center;
-}
-
-.grading-table th {
-  background-color: #cceb5f;
-}
-
-.grading-table tbody tr {
-  background-color: #ecd7d7;
+.GradingScale table {
+  text-align: left;
 }

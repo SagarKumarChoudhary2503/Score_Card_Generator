@@ -1,24 +1,25 @@
 import React, { useState, useRef } from "react";
 import { Form, Button, Table } from "react-bootstrap";
-import ResetButton from "./ResetButton";
-import "./ScoreCardForm.css";
-import GradingScaleTable from "./GradingScaleTable";
+import ClearButton from "./ClearButton";
+import "./ScoreCard.css";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import "./GradingScale.css";
 
-const ScoreCardForm = ({ onSubmit }) => {
-  const formRef = useRef(null); // Ref for the form element
+const ScoreCard = ({ onSubmit }) => {
+  const scoreCardFormRef = useRef(null);
 
-  const FT = 20;
-  const Oral = 10;
-  const SA = 60;
-  const OralSA = 10;
-  const Overall = 100;
+  const FT_MAX_MARKS = 20;
+  const ORAL_MAX_MARKS = 10;
+  const SA_MAX_MARKS = 60;
+  const ORAL_SA_MAX_MARKS = 10;
+  const OVERALL_MAX_MARKS = 100;
 
+  const [count, setCount] = useState(0);
   const [studentName, setStudentName] = useState("");
   const [rollNumber, setRollNumber] = useState("");
-  const [scholasticData, setScholasticData] = useState({});
-  const [attendanceData, setAttendanceData] = useState({
+  const [scholasticSubjects, setscholasticSubjects] = useState({});
+  const [studentAttendance, setstudentAttendance] = useState({
     workingDays: "",
     daysPresent: "",
     percentage: "",
@@ -27,69 +28,52 @@ const ScoreCardForm = ({ onSubmit }) => {
     teacherRemarks: "",
   });
 
-  const [activities, setActivities] = useState({});
+  const [dailyTasks, setdailyTasks] = useState({});
 
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [showDownloadButton, setShowDownloadButton] = useState(false);
-  const [newSubject, setNewSubject] = useState("");
-  const [newActivity, setNewActivity] = useState("");
-  const [isSubjectAdded, setIsSubjectAdded] = useState(false);
+  const [isFormProcessed, setisFormProcessed] = useState(false);
+  const [displayDownloadButton, setdisplayDownloadButton] = useState(false);
+  const [enteredSubject, setEnteredSubject] = useState("");
+  const [upcomingTask, setupcomingTask] = useState("");
+  const [hasSubjectBeenAdded, sethasSubjectBeenAdded] = useState(false);
+  // const [FormProcessed, setFormProcessed] = useState(false);
 
-  const handleChangeNewSubject = (e) => {
-    setNewSubject(e.target.value);
+  const handleSubjectInputChange = (event) => {
+    setEnteredSubject(event.target.value);
   };
 
-  // const handleAddSubject = () => {
-  //   const pattern = /^[a-zA-Z]+$/;
-  //   if (pattern.test(newSubject.trim())) {
-  //     if (newSubject.trim() !== "") {
-  //       setScholasticData({
-  //         ...scholasticData,
-  //         [newSubject]: { FT: "", Oral: "", SA: "", OralSA: "" },
-  //       });
-  //       setNewSubject("");
-  //       setIsSubjectAdded(true);
-  //       console.log("isSubjectAdded:", isSubjectAdded);
-  //     }
-  //   } else {
-  //     alert("Please enter alphabetic characters only for the subject name.");
-  //   }
-  // };
-
-  const handleAddSubject = () => {
-    const pattern = /^[a-zA-Z]+$/;
-
-    if (!pattern.test(newSubject.trim())) {
+  const addNewSubject = () => {
+    const alphabeticPattern = /^[a-zA-Z]+$/;
+    setCount(count + 1);
+    if (!alphabeticPattern.test(enteredSubject.trim())) {
       alert("Please enter alphabetic characters only for the subject name.");
       return;
     }
 
-    if (newSubject.trim() === "") {
+    if (enteredSubject.trim() === "") {
       return;
     }
 
-    setScholasticData({
-      ...scholasticData,
-      [newSubject]: { FT: "", Oral: "", SA: "", OralSA: "" },
+    setscholasticSubjects({
+      ...scholasticSubjects,
+      [enteredSubject]: { FT: "", Oral: "", SA: "", OralSA: "" },
     });
-    setNewSubject("");
-    setIsSubjectAdded(true);
-    console.log("isSubjectAdded:", isSubjectAdded);
+    setEnteredSubject("");
+    sethasSubjectBeenAdded(true);
   };
 
-  const handleChangeNewActivity = (e) => {
-    setNewActivity(e.target.value);
+  const handleChangeupcomingTask = (event) => {
+    setupcomingTask(event.target.value);
   };
 
-  const handleAddActivity = () => {
+  const addNewActivity = () => {
     const pattern = /^[a-zA-Z]+$/;
-    if (pattern.test(newActivity.trim())) {
-      if (newActivity.trim() !== "") {
-        setActivities({
-          ...activities,
-          [newActivity]: { Grade: "" },
+    if (pattern.test(upcomingTask.trim())) {
+      if (upcomingTask.trim() !== "") {
+        setdailyTasks({
+          ...dailyTasks,
+          [upcomingTask]: { Grade: "" },
         });
-        setNewActivity("");
+        setupcomingTask("");
       }
     } else {
       alert("Please enter alphabetic characters only for the activity name.");
@@ -101,40 +85,42 @@ const ScoreCardForm = ({ onSubmit }) => {
     const numericValue = parseInt(value, 10);
     if (numericValue === 0 && value.length > 1) {
       e.preventDefault();
-      e.target.value = ""; // Clear the input field
+      e.target.value = "";
       return;
     }
 
-    setScholasticData({
-      ...scholasticData,
-      [subject]: { ...scholasticData[subject], [subCategory]: parseInt(value) },
+    setscholasticSubjects({
+      ...scholasticSubjects,
+      [subject]: {
+        ...scholasticSubjects[subject],
+        [subCategory]: parseInt(value),
+      },
     });
   };
 
   const handleChangeActivity = (index, e) => {
-    const {} = e.target;
+    <></>;
   };
 
   const handleSubmit = (e) => {
-    console.log("handleSubmit called");
     e.preventDefault();
 
-    // Validation for student name and roll number
     if (!studentName.trim() || !rollNumber.trim()) {
       alert("Student name and roll number are required fields.");
       return;
     }
 
-    if (Object.keys(scholasticData).length == 0) {
+    if (Object.keys(scholasticSubjects).length === 0) {
       alert("Please add at least one subject before submitting.");
       return;
     }
 
-    if (Object.keys(activities).length == 0) {
+    if (Object.keys(dailyTasks).length === 0) {
       alert("Please add at least one activity before submitting.");
       return;
     }
-    const scholasticDataWithOverallMarks = { ...scholasticData };
+
+    const scholasticDataWithOverallMarks = { ...scholasticSubjects };
     let grandTotal = 0;
     Object.entries(scholasticDataWithOverallMarks).forEach(
       ([subject, marks]) => {
@@ -146,13 +132,14 @@ const ScoreCardForm = ({ onSubmit }) => {
       }
     );
 
-    const { workingDays, daysPresent } = attendanceData;
+    const { workingDays, daysPresent } = studentAttendance;
     const percentage = ((daysPresent / workingDays) * 100).toFixed(2);
-    const grandTotalPercentage = ((grandTotal / 500) * 100).toFixed(2);
+    const OverCount = count * OVERALL_MAX_MARKS;
+    const grandTotalPercentage = ((grandTotal / OverCount) * 100).toFixed(2);
 
     const cgpa = parseFloat((grandTotalPercentage / 10).toFixed(2));
 
-    setScholasticData({
+    setscholasticSubjects({
       ...scholasticDataWithOverallMarks,
       GrandTotal: {
         overallMarks: grandTotal,
@@ -161,31 +148,40 @@ const ScoreCardForm = ({ onSubmit }) => {
     });
 
     let grade, teacherRemarks;
-    if (grandTotalPercentage > 90) {
-      grade = "A1";
-      teacherRemarks = "Excellent";
-    } else if (grandTotalPercentage < 91 && grandTotalPercentage > 80) {
-      grade = "A2";
-      teacherRemarks = "Very Good";
-    } else if (grandTotalPercentage < 81 && grandTotalPercentage > 70) {
-      grade = "B1";
-      teacherRemarks = "Good";
-    } else if (grandTotalPercentage < 71 && grandTotalPercentage > 60) {
-      grade = "B2";
-      teacherRemarks = "Satisfactory";
-    } else if (grandTotalPercentage < 61 && grandTotalPercentage > 50) {
-      grade = "C1";
-      teacherRemarks = "Satisfactory";
-    } else if (grandTotalPercentage < 51 && grandTotalPercentage > 40) {
-      grade = "C2";
-      teacherRemarks = "Unsatisfactory";
-    } else {
-      grade = "D";
-      teacherRemarks = "FAIL";
+
+    switch (true) {
+      case grandTotalPercentage > 90:
+        grade = "A1";
+        teacherRemarks = "Excellent";
+        break;
+      case grandTotalPercentage > 80:
+        grade = "A2";
+        teacherRemarks = "Very Good";
+        break;
+      case grandTotalPercentage > 70:
+        grade = "B1";
+        teacherRemarks = "Good";
+        break;
+      case grandTotalPercentage > 60:
+        grade = "B2";
+        teacherRemarks = "Satisfactory";
+        break;
+      case grandTotalPercentage > 50:
+        grade = "C1";
+        teacherRemarks = "Satisfactory";
+        break;
+      case grandTotalPercentage > 40:
+        grade = "C2";
+        teacherRemarks = "Unsatisfactory";
+        break;
+      default:
+        grade = "D";
+        teacherRemarks = "FAIL";
+        break;
     }
 
-    setAttendanceData({
-      ...attendanceData,
+    setstudentAttendance({
+      ...studentAttendance,
       percentage,
       grade,
       cgpa,
@@ -195,12 +191,12 @@ const ScoreCardForm = ({ onSubmit }) => {
     onSubmit({
       studentName,
       rollNumber,
-      scholasticData: scholasticDataWithOverallMarks,
-      attendanceData,
+      scholasticSubjects: scholasticDataWithOverallMarks,
+      studentAttendance,
       grandTotalPercentage,
     });
-    setShowDownloadButton(true);
-    setFormSubmitted(true);
+    setdisplayDownloadButton(true);
+    setisFormProcessed(true);
   };
 
   const handleDownloadPDF = () => {
@@ -208,9 +204,9 @@ const ScoreCardForm = ({ onSubmit }) => {
     excludedElements.forEach((element) => {
       element.style.display = "none";
     });
-    if (!formRef.current) return;
+    if (!scoreCardFormRef.current) return;
 
-    html2canvas(formRef.current).then((canvas) => {
+    html2canvas(scoreCardFormRef.current).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 210;
@@ -221,16 +217,16 @@ const ScoreCardForm = ({ onSubmit }) => {
       handleReset();
     });
 
-    setShowDownloadButton(false);
-    setFormSubmitted(false);
+    setdisplayDownloadButton(false);
+    setisFormProcessed(false);
   };
 
   const handleReset = () => {
-    setNewSubject("");
-    setNewActivity("");
+    setEnteredSubject("");
+    setupcomingTask("");
     setStudentName("");
     setRollNumber("");
-    setAttendanceData({
+    setstudentAttendance({
       workingDays: "",
       daysPresent: "",
       percentage: "",
@@ -238,24 +234,28 @@ const ScoreCardForm = ({ onSubmit }) => {
       grade: "",
       teacherRemarks: "",
     });
-    setScholasticData({});
-    setActivities({});
-    setShowDownloadButton(false);
-    setFormSubmitted(false);
+    setscholasticSubjects({});
+    setdailyTasks({});
+    setdisplayDownloadButton(false);
+    setisFormProcessed(false);
   };
 
   return (
     <>
-      <Form ref={formRef} onSubmit={handleSubmit} className="score-card-form">
+      <Form
+        ref={scoreCardFormRef}
+        onSubmit={handleSubmit}
+        className="report-card-form"
+      >
         <h1>FIRST TERMINAL EXAMINATION 2024-25</h1>
         <h2>ACADEMIC PERFORMANCE</h2>
 
-        {/* Student Name and Roll Number Fields */}
-        <Form.Group controlId="studentName">
-          <Form.Label className="bold-label">Student Name</Form.Label>
+        <div>
+          <Form.Label className="bold-label">
+            Student Name
+          </Form.Label>
           &nbsp;
           <Form.Control
-            className="custom-input" // Add a class name to target the input fields
             type="text"
             value={studentName}
             onChange={(e) => setStudentName(e.target.value)}
@@ -263,14 +263,17 @@ const ScoreCardForm = ({ onSubmit }) => {
             pattern="[A-Za-z ]+"
             title="Please Enter Alphabetic Characters Only"
             required
-            disabled={formSubmitted}
+            disabled={isFormProcessed}
+            style={{ width: "300px" }}
           />
-        </Form.Group>
+        </div>
 
-        <Form.Group controlId="rollNumber">
-          <Form.Label className="bold-label">Roll Number</Form.Label>&nbsp;
+        <div>
+          <Form.Label className="bold-label">
+            Roll Number
+          </Form.Label>
+          &nbsp;
           <Form.Control
-            className="custom-input" // Add the same class name to target the input fields
             type="text"
             value={rollNumber}
             onChange={(e) => setRollNumber(e.target.value)}
@@ -278,59 +281,58 @@ const ScoreCardForm = ({ onSubmit }) => {
             pattern="[0-9]+"
             title="Please Enter Numeric Characters Only"
             required
-            disabled={formSubmitted}
+            disabled={isFormProcessed}
+            style={{ width: "300px" }}
           />
-        </Form.Group>
+        </div>
 
-        <div style={{ display: formSubmitted ? "none" : "block" }}>
-          <Button onClick={handleAddSubject} disabled={formSubmitted}>
+        <div style={{ display: isFormProcessed ? "none" : "block" }}>
+          <Button onClick={addNewSubject} disabled={isFormProcessed}>
             Add Subject
           </Button>
           &nbsp;
-          {formSubmitted ? null : (
+          {isFormProcessed ? null : (
             <Form.Control
-              // className="SubjectBTN"
               type="text"
-              value={newSubject}
-              onChange={handleChangeNewSubject}
+              value={enteredSubject}
+              onChange={handleSubjectInputChange}
               placeholder="Please Enter The Subject Name"
               title="Please Enter Alphabetic Characters Only"
-              style={{ width: "300px" }} // Adjust the width as needed
+              style={{ width: "300px" }}
             />
           )}
         </div>
-        <div style={{ display: formSubmitted ? "none" : "block" }}>
-          <Button onClick={handleAddActivity} disabled={formSubmitted}>
+        <div style={{ display: isFormProcessed ? "none" : "block" }}>
+          <Button onClick={addNewActivity} disabled={isFormProcessed}>
             Add Activity
           </Button>
           &nbsp;
-          {formSubmitted ? null : (
+          {isFormProcessed ? null : (
             <Form.Control
-              // className="ActivityBTN"
               type="text"
-              value={newActivity}
-              onChange={handleChangeNewActivity}
+              value={upcomingTask}
+              onChange={handleChangeupcomingTask}
               placeholder="Please Enter The Activity Name"
               title="Please Enter Alphabetic Characters Only"
               style={{ width: "300px" }}
             />
           )}
         </div>
-        <div className="scholastic-area">
+        <div className="academic-section">
           <h3>Part - 1 : Scholastic Area</h3>
           <table>
             <thead>
               <tr>
                 <th>Subject</th>
-                <th>FT-{FT}</th>
-                <th>Oral-{Oral}</th>
-                <th>SA-{SA}</th>
-                <th>OralSA-{OralSA}</th>
-                <th>Overall Marks-{Overall}</th>
+                <th>FT-{FT_MAX_MARKS}</th>
+                <th>Oral-{ORAL_MAX_MARKS}</th>
+                <th>SA-{SA_MAX_MARKS}</th>
+                <th>OralSA-{ORAL_SA_MAX_MARKS}</th>
+                <th>Overall Marks-{OVERALL_MAX_MARKS}</th>
               </tr>
             </thead>
             <tbody>
-              {Object.entries(scholasticData).map(([subject, marks]) => {
+              {Object.entries(scholasticSubjects).map(([subject, marks]) => {
                 if (subject !== "GrandTotal") {
                   return (
                     <tr key={subject}>
@@ -343,9 +345,9 @@ const ScoreCardForm = ({ onSubmit }) => {
                             handleChangeScholastic(subject, "FT", e)
                           }
                           min={0}
-                          max={20}
+                          max={FT_MAX_MARKS}
                           required
-                          disabled={formSubmitted}
+                          disabled={isFormProcessed}
                         />
                       </td>
                       <td>
@@ -356,9 +358,9 @@ const ScoreCardForm = ({ onSubmit }) => {
                             handleChangeScholastic(subject, "Oral", e)
                           }
                           min={0}
-                          max={10}
+                          max={ORAL_MAX_MARKS}
                           required
-                          disabled={formSubmitted}
+                          disabled={isFormProcessed}
                         />
                       </td>
                       <td>
@@ -369,9 +371,9 @@ const ScoreCardForm = ({ onSubmit }) => {
                             handleChangeScholastic(subject, "SA", e)
                           }
                           min={0}
-                          max={60}
+                          max={SA_MAX_MARKS}
                           required
-                          disabled={formSubmitted}
+                          disabled={isFormProcessed}
                         />
                       </td>
                       <td>
@@ -382,9 +384,9 @@ const ScoreCardForm = ({ onSubmit }) => {
                             handleChangeScholastic(subject, "OralSA", e)
                           }
                           min={0}
-                          max={10}
+                          max={ORAL_SA_MAX_MARKS}
                           required
-                          disabled={formSubmitted}
+                          disabled={isFormProcessed}
                         />
                       </td>
                       <td>{marks.overallMarks}</td>
@@ -396,20 +398,22 @@ const ScoreCardForm = ({ onSubmit }) => {
               })}
               <tr>
                 <th>GrandTotal:</th>
-                <td colSpan="5">{scholasticData.GrandTotal?.overallMarks}</td>
+                <td colSpan="1">
+                  {scholasticSubjects.GrandTotal?.overallMarks}
+                </td>
               </tr>
               <tr>
                 <th>Percentage:</th>
-                <td colSpan="5">
-                  {scholasticData.GrandTotal?.percentageOfGD}%
+                <td colSpan="1">
+                  {scholasticSubjects.GrandTotal?.percentageOfGD}%
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div className="co-scholastic-area">
+        <div className="extracurricular-section">
           <h3>Part - 2 : Co-Scholastic Area</h3>
-          <Table striped bordered hover>
+          <Table>
             <thead>
               <tr>
                 <th>Activity</th>
@@ -417,7 +421,7 @@ const ScoreCardForm = ({ onSubmit }) => {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(activities).map(([activity, index]) => (
+              {Object.entries(dailyTasks).map(([activity, index]) => (
                 <tr key={index}>
                   <td>{activity}</td>
                   <td>
@@ -428,7 +432,7 @@ const ScoreCardForm = ({ onSubmit }) => {
                       onChange={(e) => handleChangeActivity(index, e)}
                       pattern="^(B|A|A\+)$"
                       required
-                      disabled={formSubmitted}
+                      disabled={isFormProcessed}
                     />
                   </td>
                 </tr>
@@ -437,7 +441,7 @@ const ScoreCardForm = ({ onSubmit }) => {
           </Table>
         </div>
 
-        <div className="attendance-area">
+        <div className="attendance-section">
           <h3>Part - 3 : Attendance</h3>
           <Table striped bordered hover>
             <thead>
@@ -453,51 +457,101 @@ const ScoreCardForm = ({ onSubmit }) => {
                   <Form.Control
                     type="number"
                     name="workingDays"
-                    value={attendanceData.workingDays}
+                    value={studentAttendance.workingDays}
                     onChange={(e) =>
-                      setAttendanceData({
-                        ...attendanceData,
+                      setstudentAttendance({
+                        ...studentAttendance,
                         workingDays: e.target.value,
                       })
                     }
                     min={0}
-                    max={366}
+                    max={60}
                     required
-                    disabled={formSubmitted}
+                    disabled={isFormProcessed}
                   />
                 </td>
                 <td>
                   <Form.Control
                     type="number"
                     name="daysPresent"
-                    value={attendanceData.daysPresent}
+                    value={studentAttendance.daysPresent}
                     onChange={(e) =>
-                      setAttendanceData({
-                        ...attendanceData,
+                      setstudentAttendance({
+                        ...studentAttendance,
                         daysPresent: e.target.value,
                       })
                     }
                     min={0}
-                    max={366}
+                    max={60}
                     required
-                    disabled={formSubmitted}
+                    disabled={isFormProcessed}
                   />
                 </td>
-                <td>{attendanceData.percentage}%</td>
+                <td>{studentAttendance.percentage}%</td>
               </tr>
             </tbody>
           </Table>
         </div>
         <th>C.G.P :</th>
-        <td>{attendanceData.cgpa}</td>
+        <td>{studentAttendance.cgpa}</td>
         <th>Grade :</th>
-        <td>{attendanceData.grade}</td>
+        <td>{studentAttendance.grade}</td>
         <th>Teacher's Remarks :</th>
-        <td>{attendanceData.teacherRemarks}</td>
-        <div className="gradingScale">
-          <GradingScaleTable />
+        <td>{studentAttendance.teacherRemarks}</td>
+        <div className="gradingScale"></div>
+        <div className="GradingScale">
+          <table>
+            <thead>
+              <tr>
+                <th colSpan="3">Grading Scale</th>
+              </tr>
+              <tr>
+                <th>Marking Range</th>
+                <th>Grades</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>91-100</td>
+                <td>A1</td>
+                <td>Excellent</td>
+              </tr>
+              <tr>
+                <td>81-90</td>
+                <td>A2</td>
+                <td>Very Good</td>
+              </tr>
+              <tr>
+                <td>71-80</td>
+                <td>B1</td>
+                <td>Good</td>
+              </tr>
+              <tr>
+                <td>61-70</td>
+                <td>B2</td>
+                <td>Satisfactory</td>
+              </tr>
+              <tr>
+                <td>51-60</td>
+                <td>C1</td>
+                <td>Satisfactory</td>
+              </tr>
+              <tr>
+                <td>40-50</td>
+                <td>C2</td>
+                <td>Unsatisfactory</td>
+              </tr>
+              <tr>
+                <td>Below 40</td>
+                <td>D</td>
+                <td>Fail</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        {showDownloadButton ? (
+
+        {displayDownloadButton ? (
           <Button
             variant="primary"
             className="exclude-from-pdf"
@@ -507,7 +561,7 @@ const ScoreCardForm = ({ onSubmit }) => {
           </Button>
         ) : (
           <>
-            <ResetButton onClick={handleReset} />
+            <ClearButton handleClearButtonClick={handleReset} />
             <Button variant="primary" type="submit">
               Submit
             </Button>
@@ -518,4 +572,4 @@ const ScoreCardForm = ({ onSubmit }) => {
   );
 };
 
-export default ScoreCardForm;
+export default ScoreCard;

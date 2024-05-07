@@ -1,18 +1,18 @@
 import React, { useState } from "react";
-import ScoreCardForm from "./ScoreCardForm";
+import ScoreCard from "./ScoreCard";
 import Header from "./Header";
 import Footer from "./Footer";
 
 const App = () => {
-  const handleSubmit = (data) => {
-    console.log("Form data:", data);
+  const handleFormSubmission = () => {
+    "";
   };
 
   return (
     <div>
-      <Header/>
-      <ScoreCardForm onSubmit={handleSubmit} />{" "}
-      <Footer/>
+      <Header />
+      <ScoreCard onSubmit={handleFormSubmission} />
+      <Footer />
     </div>
   );
 };

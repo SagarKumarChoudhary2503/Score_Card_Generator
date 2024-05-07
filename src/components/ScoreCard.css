@@ -1,0 +1,99 @@
+.report-card-form h1 {
+  text-align: center;
+  color: midnightblue;
+  grid-column: span 2;
+  font-style: bold;
+  background-color: yellowgreen;
+  margin: auto;
+}
+
+.report-card-form h2 {
+  text-align: center;
+  font-weight: 100;
+  grid-column: span 2;
+}
+
+.report-card-form h3 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: red;
+}
+
+.report-card-form {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 8px solid #16c3da;
+  background-color: #bd29e22d;
+  display: grid;
+}
+
+.report-card-form .academic-section {
+  grid-column: 1;
+  width: 100%;
+}
+
+.report-card-form .extracurricular-section {
+  grid-column: 2;
+  width: 100%;
+}
+
+.report-card-form .attendance-section {
+  grid-column: span 2;
+  width: 100%;
+}
+
+.report-card-form .academic-section table,
+.report-card-form .extracurricular-section table,
+.report-card-form .attendance-section table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-card-form th,
+.report-card-form td {
+  text-align: center;
+  border: 2px dotted chocolate;
+}
+
+.report-card-form input[type="number"] {
+  padding: 12px;
+  width: calc(80px - 20px);
+  border: 3px dashed #ccc;
+  border-radius: 20px;
+  box-sizing: border-box;
+}
+
+.report-card-form input[type="text"] {
+  padding: 12px;
+  width: calc(80px - 20px);
+  border: 3px dashed #ccc;
+  border-radius: 20px;
+  box-sizing: border-box;
+}
+
+.report-card-form button {
+  margin-top: 30px;
+  background-color: black;
+  color: #fff;
+
+  cursor: pointer;
+  border: none;
+
+  grid-column: span 2;
+  padding: 8px 8px;
+}
+
+.bold-label {
+  font-weight: bold;
+}
+
+input#studentName {
+  width: 320px;
+}
+
+input#rollNumber {
+  width: 320px;
+}
+
+
